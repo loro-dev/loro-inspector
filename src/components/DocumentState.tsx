@@ -1,10 +1,19 @@
 import { LoroDoc } from "loro-crdt";
 import { useEffect, useState } from "react";
+import { debounce } from "throttle-debounce";
 
 export function DocumentState({ loroDoc }: { loroDoc: LoroDoc }) {
     const [state, setState] = useState<unknown>(undefined);
     useEffect(() => {
         setState(loroDoc.toJSON());
+        const sub = loroDoc.subscribe(
+            debounce(100, () => {
+                setState(loroDoc.toJSON());
+            })
+        );
+        return () => {
+            sub();
+        }
     }, [loroDoc])
     return <div className="overflow-x-auto max-w-[calc(100vw-80px)] lg:max-w-[calc(100vw-600px)]">
         <CollapsibleJsonViewer json={state} />

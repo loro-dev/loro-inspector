@@ -7,6 +7,7 @@ import { ImportedFileDetails } from "./components/ImportedFileDetails";
 import { DocumentState } from "./components/DocumentState";
 import { DocumentHistory } from "./components/DocumentHistory";
 import { HistoryVisualizer } from "./components/HistoryVisualizer";
+import { TimelineViewer } from "./components/TimelineViewer";
 
 function App() {
   const [imported, setImported] = useState<LoroFile | undefined>();
@@ -109,7 +110,10 @@ function App() {
                     </div>
 
                     {imported.binary.length > 10 ? (
-                      <DocumentState loroDoc={imported.loroDoc} />
+                      <div>
+                        <TimelineViewer loroDoc={imported.loroDoc} onLengthChange={() => { }} onNewFrontiers={() => { }} />
+                        <DocumentState loroDoc={imported.loroDoc} />
+                      </div>
                     ) : (
                       <div className="rounded-lg border border-gray-800 bg-gray-900/80 p-4">
                         <div className="min-h-[300px] flex items-center justify-center">
