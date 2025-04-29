@@ -12,6 +12,23 @@ import { TimelineViewer } from "./components/TimelineViewer";
 function App() {
   const [imported, setImported] = useState<LoroFile | undefined>();
   const [activeTab, setActiveTab] = useState<'state' | 'history' | 'dag'>('state');
+  const [loadedTabs, setLoadedTabs] = useState<{
+    state: boolean;
+    history: boolean;
+    dag: boolean;
+  }>({
+    state: true, // Initially load the state tab since it's the default
+    history: false,
+    dag: false,
+  });
+
+  const activateTab = (tab: 'state' | 'history' | 'dag') => {
+    setActiveTab(tab);
+    setLoadedTabs(prev => ({
+      ...prev,
+      [tab]: true
+    }));
+  };
 
   return (
     <div className="dark min-h-[100vh] bg-gradient-to-b from-gray-950 to-gray-900 text-gray-200">
@@ -70,7 +87,7 @@ function App() {
                 <div className="border-b border-gray-800 pb-4 overflow-x-auto">
                   <div className="flex space-x-2 sm:space-x-4 min-w-max">
                     <button
-                      onClick={() => setActiveTab('state')}
+                      onClick={() => activateTab('state')}
                       className={`px-2 sm:px-4 py-2 rounded-md transition-colors text-sm sm:text-base ${activeTab === 'state'
                         ? 'bg-indigo-600 text-white'
                         : 'text-gray-400 hover:bg-gray-800 hover:text-white'
@@ -79,7 +96,7 @@ function App() {
                       State
                     </button>
                     <button
-                      onClick={() => setActiveTab('history')}
+                      onClick={() => activateTab('history')}
                       className={`px-2 sm:px-4 py-2 rounded-md transition-colors text-sm sm:text-base ${activeTab === 'history'
                         ? 'bg-indigo-600 text-white'
                         : 'text-gray-400 hover:bg-gray-800 hover:text-white'
@@ -88,7 +105,7 @@ function App() {
                       History
                     </button>
                     <button
-                      onClick={() => setActiveTab('dag')}
+                      onClick={() => activateTab('dag')}
                       className={`px-2 sm:px-4 py-2 rounded-md transition-colors text-sm sm:text-base ${activeTab === 'dag'
                         ? 'bg-indigo-600 text-white'
                         : 'text-gray-400 hover:bg-gray-800 hover:text-white'
@@ -99,46 +116,50 @@ function App() {
                   </div>
                 </div>
 
-                {activeTab === 'state' && (
-                  <div className="space-y-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                      <h3 className="text-xl font-medium text-white">Current Document State</h3>
-                      <div className="flex gap-2">
-                        <Button variant="secondary" size="sm">Export JSON</Button>
-                        <Button variant="default" size="sm">Refresh</Button>
-                      </div>
-                    </div>
-
-                    {imported.binary.length > 10 ? (
-                      <div>
-                        <TimelineViewer loroDoc={imported.loroDoc} onLengthChange={() => { }} onNewFrontiers={() => { }} />
-                        <DocumentState loroDoc={imported.loroDoc} />
-                      </div>
-                    ) : (
-                      <div className="rounded-lg border border-gray-800 bg-gray-900/80 p-4">
-                        <div className="min-h-[300px] flex items-center justify-center">
-                          <div className="text-center text-gray-500">
-                            <div className="mb-4 text-6xl">📄</div>
-                            <p>Document state will appear here</p>
-                          </div>
+                <div className="space-y-4">
+                  {loadedTabs.state && (
+                    <div style={{ display: activeTab === 'state' ? 'block' : 'none' }} className="space-y-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <h3 className="text-xl font-medium text-white">Current Document State</h3>
+                        <div className="flex gap-2">
+                          <Button variant="secondary" size="sm">Export JSON</Button>
+                          <Button variant="default" size="sm">Refresh</Button>
                         </div>
                       </div>
-                    )}
-                  </div>
-                )}
 
-                {activeTab === 'history' && (
-                  <DocumentHistory loroDoc={imported.loroDoc} />
-                )}
-
-                {activeTab === 'dag' && (
-                  <div className="space-y-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                      <h3 className="text-xl font-medium text-white">Changes DAG Visualization</h3>
+                      {imported.binary.length > 10 ? (
+                        <div>
+                          <TimelineViewer loroDoc={imported.loroDoc} onLengthChange={() => { }} onNewFrontiers={() => { }} />
+                          <DocumentState loroDoc={imported.loroDoc} />
+                        </div>
+                      ) : (
+                        <div className="rounded-lg border border-gray-800 bg-gray-900/80 p-4">
+                          <div className="min-h-[300px] flex items-center justify-center">
+                            <div className="text-center text-gray-500">
+                              <div className="mb-4 text-6xl">📄</div>
+                              <p>Document state will appear here</p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <HistoryVisualizer loroDoc={imported.loroDoc} />
-                  </div>
-                )}
+                  )}
+
+                  {loadedTabs.history && (
+                    <div style={{ display: activeTab === 'history' ? 'block' : 'none' }}>
+                      <DocumentHistory loroDoc={imported.loroDoc} />
+                    </div>
+                  )}
+
+                  {loadedTabs.dag && (
+                    <div style={{ display: activeTab === 'dag' ? 'block' : 'none' }} className="space-y-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <h3 className="text-xl font-medium text-white">Changes DAG Visualization</h3>
+                      </div>
+                      <HistoryVisualizer loroDoc={imported.loroDoc} />
+                    </div>
+                  )}
+                </div>
               </div>
             ) : (
               <div className="flex min-h-[400px] flex-col items-center justify-center space-y-4 text-center">
