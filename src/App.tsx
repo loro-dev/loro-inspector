@@ -6,10 +6,11 @@ import { Button } from "@/components/ui/button";
 import { ImportedFileDetails } from "./components/ImportedFileDetails";
 import { DocumentState } from "./components/DocumentState";
 import { DocumentHistory } from "./components/DocumentHistory";
+import { HistoryVisualizer } from "./components/HistoryVisualizer";
 
 function App() {
   const [imported, setImported] = useState<LoroFile | undefined>();
-  const [activeTab, setActiveTab] = useState<'state' | 'history'>('state');
+  const [activeTab, setActiveTab] = useState<'state' | 'history' | 'dag'>('state');
 
   return (
     <div className="dark min-h-[100vh] bg-gradient-to-b from-gray-950 to-gray-900 text-gray-200">
@@ -85,6 +86,15 @@ function App() {
                     >
                       History
                     </button>
+                    <button
+                      onClick={() => setActiveTab('dag')}
+                      className={`px-2 sm:px-4 py-2 rounded-md transition-colors text-sm sm:text-base ${activeTab === 'dag'
+                        ? 'bg-indigo-600 text-white'
+                        : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                        }`}
+                    >
+                      DAG
+                    </button>
                   </div>
                 </div>
 
@@ -115,6 +125,15 @@ function App() {
 
                 {activeTab === 'history' && (
                   <DocumentHistory loroDoc={imported.loroDoc} />
+                )}
+
+                {activeTab === 'dag' && (
+                  <div className="space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <h3 className="text-xl font-medium text-white">Changes DAG Visualization</h3>
+                    </div>
+                    <HistoryVisualizer loroDoc={imported.loroDoc} />
+                  </div>
                 )}
               </div>
             ) : (

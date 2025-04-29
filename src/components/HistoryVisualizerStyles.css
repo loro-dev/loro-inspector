@@ -1,0 +1,9 @@
+/* Invert colors for the ReactFlow panel controls */
+.react-flow__panel {
+  filter: invert(1);
+}
+
+/* Make sure the background remains untouched */
+.react-flow__background {
+  filter: none;
+} 
