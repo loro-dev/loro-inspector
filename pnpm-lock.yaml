@@ -175,10 +175,10 @@ importers:
         specifier: ^5.4.18
         version: 5.4.18(@types/node@20.17.32)
       vite-plugin-top-level-await:
-        specifier: ^1.4.1
+        specifier: ^1.5.0
         version: 1.5.0(rollup@4.40.1)(vite@5.4.18(@types/node@20.17.32))
       vite-plugin-wasm:
-        specifier: ^3.3.0
+        specifier: ^3.4.1
         version: 3.4.1(vite@5.4.18(@types/node@20.17.32))
 
 packages:

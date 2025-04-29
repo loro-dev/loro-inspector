@@ -1,4 +1,4 @@
-import { SVGProps, useState } from "react";
+import { SVGProps, useState, useCallback } from "react";
 import logo from "/icon.png";
 import { Dropzone } from "@/components/ui/dropzone";
 import { LoroFile } from "./types";
@@ -8,6 +8,8 @@ import { DocumentState } from "./components/DocumentState";
 import { DocumentHistory } from "./components/DocumentHistory";
 import { HistoryVisualizer } from "./components/HistoryVisualizer";
 import { TimelineViewer } from "./components/TimelineViewer";
+import { decodeImportBlobMeta, LoroDoc } from "loro-crdt";
+import { toast } from "sonner";
 
 function App() {
   const [imported, setImported] = useState<LoroFile | undefined>();
@@ -21,6 +23,7 @@ function App() {
     history: false,
     dag: false,
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   const activateTab = (tab: 'state' | 'history' | 'dag') => {
     setActiveTab(tab);
@@ -29,6 +32,37 @@ function App() {
       [tab]: true
     }));
   };
+
+  const loadExampleFile = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('/latch.loro');
+      if (!response.ok) {
+        throw new Error(`Failed to load example file: ${response.statusText}`);
+      }
+
+      const arrayBuffer = await response.arrayBuffer();
+      const data = new Uint8Array(arrayBuffer);
+      const meta = decodeImportBlobMeta(data, true);
+      const loroDoc = new LoroDoc();
+      loroDoc.import(data);
+
+      setImported({
+        name: 'latch.loro',
+        binary: data,
+        lastModified: Date.now(),
+        loroDoc,
+        ...meta
+      });
+
+      toast.success('Loaded example document');
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to load example document');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   return (
     <div className="dark min-h-[100vh] bg-gradient-to-b from-gray-950 to-gray-900 text-gray-200">
@@ -180,9 +214,16 @@ function App() {
                   </svg>
                 </div>
                 <h3 className="text-xl font-medium text-white">No Loro Document Loaded</h3>
-                <p className="max-w-sm text-gray-400">
+                <p className="max-w-sm text-gray-400 mb-4">
                   Upload a Loro document file using the dropzone to inspect its content and history
                 </p>
+                <Button
+                  variant="outline"
+                  onClick={loadExampleFile}
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Loading...' : 'Try Example Document'}
+                </Button>
               </div>
             )}
           </div>
