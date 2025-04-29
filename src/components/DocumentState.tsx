@@ -13,7 +13,6 @@ export function DocumentState({ loroDoc }: { loroDoc: LoroDoc }) {
 
 
 export function CollapsibleJsonViewer({ json }: { json: unknown }) {
-    const [open, setOpen] = useState(true);
     const [expandedNodes, setExpandedNodes] = useState<Record<string, boolean>>({});
     const [modal, setModal] = useState<{ open: boolean, content: string }>({ open: false, content: "" });
 
@@ -60,7 +59,7 @@ export function CollapsibleJsonViewer({ json }: { json: unknown }) {
         if (value === null) return <span className="text-gray-500">null</span>;
         if (value === undefined) return <span className="text-gray-500">undefined</span>;
 
-        const isExpanded = expandedNodes[path] !== false; // Expanded by default
+        const isExpanded = expandedNodes[path] === true || depth === 0; // First level always expanded
 
         if (Array.isArray(value)) {
             if (value.length === 0) return <span className="text-gray-400">[]</span>;
@@ -68,7 +67,7 @@ export function CollapsibleJsonViewer({ json }: { json: unknown }) {
             return (
                 <div className="ml-4">
                     <div
-                        className="flex cursor-pointer items-center gap-1 text-gray-300 hover:text-white"
+                        className="flex cursor-pointer items-center gap-1 text-gray-300 hover:text-white w-full"
                         onClick={() => toggleNode(path)}
                     >
                         <span className={`transition-transform ${isExpanded ? "rotate-90" : "rotate-0"}`}>
@@ -76,7 +75,7 @@ export function CollapsibleJsonViewer({ json }: { json: unknown }) {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                             </svg>
                         </span>
-                        <span className="text-blue-400">Array({value.length})</span>
+                        <span className="text-gray-500">Array({value.length})</span>
                         {!isExpanded && <span className="text-gray-500 text-xs">...</span>}
                     </div>
 
@@ -101,7 +100,7 @@ export function CollapsibleJsonViewer({ json }: { json: unknown }) {
             return (
                 <div className="ml-4">
                     <div
-                        className="flex cursor-pointer items-center gap-1 text-gray-300 hover:text-white"
+                        className="flex cursor-pointer items-center gap-1 text-gray-300 hover:text-white w-full"
                         onClick={() => toggleNode(path)}
                     >
                         <span className={`transition-transform ${isExpanded ? "rotate-90" : "rotate-0"}`}>
@@ -109,7 +108,7 @@ export function CollapsibleJsonViewer({ json }: { json: unknown }) {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                             </svg>
                         </span>
-                        <span className="text-purple-400">Object({entries.length})</span>
+                        <span className="text-gray-500">Object({entries.length})</span>
                         {!isExpanded && <span className="text-gray-500 text-xs">...</span>}
                     </div>
 
@@ -142,6 +141,35 @@ export function CollapsibleJsonViewer({ json }: { json: unknown }) {
         return <span>{String(value)}</span>;
     };
 
+    const buildNodePaths = (obj: unknown, currentPath: string = "root", paths: string[] = []): string[] => {
+        if (obj === null || obj === undefined || typeof obj !== 'object') {
+            return paths;
+        }
+
+        paths.push(currentPath);
+
+        if (Array.isArray(obj)) {
+            obj.forEach((item, index) => {
+                buildNodePaths(item, `${currentPath}.${index}`, paths);
+            });
+        } else {
+            Object.entries(obj).forEach(([key, value]) => {
+                buildNodePaths(value, `${currentPath}.${key}`, paths);
+            });
+        }
+
+        return paths;
+    };
+
+    const expandAll = () => {
+        const paths = buildNodePaths(json);
+        const expanded: Record<string, boolean> = {};
+        paths.forEach(path => {
+            expanded[path] = true;
+        });
+        setExpandedNodes(expanded);
+    };
+
     return (
         <>
             <div className="overflow-hidden rounded-lg border border-gray-800 bg-gray-900/50 text-sm">
@@ -149,35 +177,21 @@ export function CollapsibleJsonViewer({ json }: { json: unknown }) {
                     <div className="text-sm font-medium text-gray-200">Document State</div>
                     <div className="flex gap-2">
                         <button
-                            onClick={() => setOpen(!open)}
-                            className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-gray-300 transition-colors hover:bg-gray-700 hover:text-white"
-                        >
-                            {open ? (
-                                <>
-                                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                    <span>Collapse</span>
-                                </>
-                            ) : (
-                                <>
-                                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                    </svg>
-                                    <span>Expand</span>
-                                </>
-                            )}
-                        </button>
-                        <button
                             onClick={() => setExpandedNodes({})}
                             className="rounded-md px-2 py-1 text-xs text-gray-300 transition-colors hover:bg-gray-700 hover:text-white"
                         >
-                            Reset
+                            Collapse All
+                        </button>
+                        <button
+                            onClick={expandAll}
+                            className="rounded-md px-2 py-1 text-xs text-gray-300 transition-colors hover:bg-gray-700 hover:text-white"
+                        >
+                            Expand All
                         </button>
                     </div>
                 </div>
 
-                {open && (
+                {true && (
                     <div className="max-h-[600px] overflow-auto p-4 font-mono">
                         <div className="min-w-max">
                             {renderValue(json)}

@@ -21,14 +21,17 @@ export function ImportedFileDetails({ file }: ImportedFileDetailsProps) {
 
     const formatVersionVector = (vv: VersionVector | undefined) => {
         if (!vv || !vv.toJSON) return 'N/A';
+        if (vv.toJSON().size === 0) return 'None';
 
         const map = vv.toJSON();
         const entries = Array.from(map.entries()) as Array<[string, number]>;
         if (entries.length <= 3) {
-            return JSON.stringify(Object.fromEntries(entries));
+            const formattedEntries = entries.map(([key, value]) => `${key}: ${value}`).join("\n");
+            return formattedEntries;
         } else {
             const sample = entries.slice(0, 3);
-            return `${JSON.stringify(Object.fromEntries(sample))} ... (${entries.length} entries)`;
+            const formattedSample = sample.map(([key, value]) => `${key}: ${value}`).join("\n");
+            return `${formattedSample}\n... (${entries.length} entries)`;
         }
     };
 
@@ -76,7 +79,7 @@ export function ImportedFileDetails({ file }: ImportedFileDetailsProps) {
                         <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity">
                             <span className="bg-indigo-900/60 text-[10px] px-1.5 py-0.5 rounded-sm text-white">Click to view all</span>
                         </div>
-                        <div className="break-all">{formatVersionVector(file.partialStartVersionVector)}</div>
+                        <div className="whitespace-pre">{formatVersionVector(file.partialStartVersionVector)}</div>
                     </code>
                     {showStartVV && (
                         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-6 backdrop-blur-sm" onClick={() => setShowStartVV(false)}>
@@ -99,7 +102,7 @@ export function ImportedFileDetails({ file }: ImportedFileDetailsProps) {
                         <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity">
                             <span className="bg-indigo-900/60 text-[10px] px-1.5 py-0.5 rounded-sm text-white">Click to view all</span>
                         </div>
-                        <div className="break-all">{formatVersionVector(file.partialEndVersionVector)}</div>
+                        <div className="whitespace-pre">{formatVersionVector(file.partialEndVersionVector)}</div>
                     </code>
                     {showEndVV && (
                         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-6 backdrop-blur-sm" onClick={() => setShowEndVV(false)}>
@@ -131,6 +134,10 @@ export function ImportedFileDetails({ file }: ImportedFileDetailsProps) {
                 <div className="flex flex-col sm:flex-row sm:justify-between gap-1">
                     <span className="font-medium">Change Number:</span>
                     <span className="font-mono">{file.changeNum}</span>
+                </div>
+                <div className="flex flex-col sm:flex-row sm:justify-between gap-1">
+                    <span className="font-medium">Total Ops Number:</span>
+                    <span className="font-mono">{Array.from(file.partialEndVersionVector?.toJSON().values() ?? []).reduce((a, b) => a + b, 0).toLocaleString()}</span>
                 </div>
             </div>
         </div>

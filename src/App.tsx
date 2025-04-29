@@ -5,11 +5,11 @@ import { LoroFile } from "./types";
 import { Button } from "@/components/ui/button";
 import { ImportedFileDetails } from "./components/ImportedFileDetails";
 import { DocumentState } from "./components/DocumentState";
+import { DocumentHistory } from "./components/DocumentHistory";
 
 function App() {
   const [imported, setImported] = useState<LoroFile | undefined>();
   const [activeTab, setActiveTab] = useState<'state' | 'history'>('state');
-  const [historyPosition, setHistoryPosition] = useState<number>(0);
 
   return (
     <div className="dark min-h-[100vh] bg-gradient-to-b from-gray-950 to-gray-900 text-gray-200">
@@ -50,7 +50,6 @@ function App() {
               <Dropzone
                 onRead={(x) => {
                   setImported(x);
-                  setHistoryPosition(0); // Reset to the beginning of history
                 }}
               />
             </div>
@@ -115,52 +114,7 @@ function App() {
                 )}
 
                 {activeTab === 'history' && (
-                  <div className="space-y-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                      <h3 className="text-xl font-medium text-white">Operation History</h3>
-                      <Button variant="outline" size="sm">Filter Operations</Button>
-                    </div>
-
-                    <div className="rounded-lg border border-gray-800 bg-gray-900/80 p-4">
-                      <div className="min-h-[400px]">
-                        <div className="space-y-2">
-                          {[...Array(5)].map((_, i) => (
-                            <div
-                              key={i}
-                              className={`p-3 rounded-md border ${i === historyPosition
-                                ? 'border-indigo-600 bg-indigo-900/20'
-                                : 'border-gray-700 bg-gray-800/30'
-                                }`}
-                            >
-                              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
-                                <div>
-                                  <div className="font-medium text-gray-300">
-                                    Operation #{i + 1} - {i === 0 ? 'Initial State' : `Insert Text ${i}`}
-                                  </div>
-                                  <div className="text-xs text-gray-500 mt-1">
-                                    {new Date(imported.importedTime - (5 - i) * 60000).toLocaleString()}
-                                  </div>
-                                </div>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => setHistoryPosition(i)}
-                                  className={i === historyPosition ? 'text-indigo-400' : ''}
-                                >
-                                  View
-                                </Button>
-                              </div>
-                              {i > 0 && (
-                                <div className="text-xs text-gray-400 mt-2 font-mono bg-gray-800/50 p-2 rounded overflow-x-auto">
-                                  {`{"op":"insert","path":["text"],"offset":${i * 10},"content":"Lorem ipsum"}`}
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <DocumentHistory loroDoc={imported.loroDoc} />
                 )}
               </div>
             ) : (
