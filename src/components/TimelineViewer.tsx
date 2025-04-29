@@ -15,13 +15,15 @@ export function TimelineViewer(
     const [pos, setPos] = useState(-1);
     const [totalLength, setTotalLength] = useState(0);
     const [currentFrontiers, setCurrentFrontiers] = useState<Frontiers>([]);
+    const [currentChange, setCurrentChange] = useState<Change | null>(null);
+    const [currentLamport, setCurrentLamport] = useState<number>(0);
     const changeIndexToChangeRef = useRef<{ c: Change, pos: number }[]>([]);
     const lengthRef = useRef(0);
     const [isDragging, setIsDragging] = useState(false);
-
-    // Create a debounced checkout function
-    const debouncedCheckoutRef = useRef<(newPos: number) => void>();
-
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const actualCheckout = useCallback(debounce(300, (frontiers: Frontiers) => {
+        loroDoc.checkout(frontiers);
+    }), [loroDoc]);
 
     // Function to actually perform the checkout
     const performCheckout = useCallback((checkoutPos: number) => {
@@ -30,18 +32,32 @@ export function TimelineViewer(
         }
 
         if (checkoutPos === 0) {
-            loroDoc.checkout([]);
-            const frontiers = loroDoc.frontiers();
+            actualCheckout([]);
+            const frontiers: Frontiers = [];
             setCurrentFrontiers(frontiers);
+            setCurrentChange(null);
+            setCurrentLamport(0);
             onNewFrontiers(frontiers);
             return;
         }
 
         if (checkoutPos === lengthRef.current - 1) {
-            loroDoc.checkout(loroDoc.oplogFrontiers());
-            const frontiers = loroDoc.frontiers();
-            setCurrentFrontiers(frontiers);
-            onNewFrontiers(frontiers);
+            const frontiers = loroDoc.oplogFrontiers();
+            if (frontiers.length > 0) {
+                actualCheckout(frontiers);
+                setCurrentFrontiers(frontiers);
+                const c = loroDoc.getChangeAt(frontiers[0]);
+                setCurrentChange(c);
+                setCurrentLamport(c.lamport + c.length - 1);
+                onNewFrontiers(frontiers);
+            } else {
+                actualCheckout([]);
+                const frontiers: Frontiers = [];
+                setCurrentFrontiers(frontiers);
+                setCurrentChange(null);
+                setCurrentLamport(0);
+                onNewFrontiers(frontiers);
+            }
             return;
         }
 
@@ -73,26 +89,21 @@ export function TimelineViewer(
             // Calculate the frontiers for this position
             const counter = checkoutPos - targetChange.pos + targetChange.c.counter;
             const frontiers: Frontiers = [{ peer: targetChange.c.peer, counter }];
-            loroDoc.checkout(frontiers);
-            const docFrontiers = loroDoc.frontiers();
+            actualCheckout(frontiers);
+            const docFrontiers = frontiers;
             setCurrentFrontiers(docFrontiers);
+            setCurrentChange(loroDoc.getChangeAt(frontiers[0]));
+            setCurrentLamport(targetChange.c.lamport + checkoutPos - targetChange.pos);
             onNewFrontiers(docFrontiers);
         }
-    }, [loroDoc, onNewFrontiers]);
-
-    useEffect(() => {
-        debouncedCheckoutRef.current = debounce(300, (newPos: number) => {
-            performCheckout(newPos);
-        });
-    }, [performCheckout]);
+    }, [loroDoc, onNewFrontiers, actualCheckout]);
 
     useEffect(() => {
         // Basic setup
+
         const vv = loroDoc.oplogVersion().toJSON();
-        console.log({ vv })
         const length = 2 + Array.from(vv.values()).reduce((a, b) => a + b, 0)
         lengthRef.current = length;
-        console.log({ length })
         setTotalLength(length);
         onLengthChange(length);
         const changes: Change[] = [];
@@ -119,20 +130,50 @@ export function TimelineViewer(
     useEffect(() => {
         // Checkout the document to the given version (inferred from pos)
         if (pos === -1) {
-            setPos(lengthRef.current - 1);
+            if (frontiersEq(loroDoc.oplogFrontiers(), loroDoc.frontiers())) {
+                setPos(lengthRef.current - 1);
+            } else {
+                const frontiers = loroDoc.frontiers();
+                if (frontiers.length === 0) {
+                    setPos(0);
+                } else if (frontiers.length > 1) {
+                    setPos(lengthRef.current - 1);
+                } else {
+                    // Find the position by going through all the changes
+                    const frontier = frontiers[0];
+                    const changes = changeIndexToChangeRef.current;
+                    let foundPos = 0;
+
+                    for (let i = 0; i < changes.length; i++) {
+                        const change = changes[i];
+                        const { c } = change;
+
+                        // Check if this change contains the frontier
+                        if (c.peer === frontier.peer &&
+                            c.counter <= frontier.counter &&
+                            c.counter + c.length > frontier.counter) {
+                            // Calculate the exact position within the change
+                            const offset = frontier.counter - c.counter;
+                            foundPos = change.pos + offset;
+                            break;
+                        }
+                    }
+
+                    setPos(foundPos);
+                }
+            }
+
             return;
         }
 
         // If dragging, use debounced checkout to prevent excessive updates
         if (isDragging) {
-            debouncedCheckoutRef.current?.(pos);
+            performCheckout(pos);
         } else {
             // For button clicks or direct jumps, perform checkout immediately
             performCheckout(pos);
         }
-    }, [pos, isDragging, performCheckout]);
-
-    console.log({ pos, totalLength })
+    }, [pos, isDragging, performCheckout, loroDoc]);
 
     // Position label based on the current position
     const positionLabel = pos === 0
@@ -170,31 +211,51 @@ export function TimelineViewer(
     };
 
     return (
-        <div className="w-full space-y-3 p-4 bg-slate-50 rounded-lg shadow-sm dark:bg-slate-900">
-            <div className="flex justify-between text-sm text-slate-500">
-                <span>Empty Version</span>
-                <span>Latest Version</span>
+        <div className="w-full space-y-4 p-6 rounded-lg shadow-lg border border-slate-700/50 backdrop-blur-sm mb-8 mt-4">
+            <div className="flex justify-between items-center">
+                <div className="text-sm font-medium text-slate-400 flex items-center space-x-2">
+                    <div className={`w-2 h-2 rounded-full ${pos === 0 ? 'bg-indigo-400' : 'bg-slate-600'}`}></div>
+                    <span>Empty Version</span>
+                </div>
+                <div className="text-sm font-medium text-slate-400 flex items-center space-x-2">
+                    <span>Latest Version</span>
+                    <div className={`w-2 h-2 rounded-full ${pos === totalLength - 1 ? 'bg-indigo-400' : 'bg-slate-600'}`}></div>
+                </div>
             </div>
-            <div className="px-1 py-4">
-                <Slider
-                    value={[pos]}
-                    min={0}
-                    max={totalLength > 0 ? totalLength - 1 : 0}
-                    step={1}
-                    onValueChange={(value) => setPos(value[0])}
-                    onValueCommit={() => setIsDragging(false)}
-                    onPointerDown={() => setIsDragging(true)}
-                />
+
+            <div className="relative">
+                {/* Ticker marks */}
+                <div className="absolute w-full flex justify-between px-1 top-0">
+                    {Array.from({ length: 11 }).map((_, i) => (
+                        <div key={i} className="w-px h-1 bg-slate-600"></div>
+                    ))}
+                </div>
+
+                <div className="px-1 py-6">
+                    <Slider
+                        value={[pos]}
+                        min={0}
+                        max={totalLength > 0 ? totalLength - 1 : 0}
+                        step={1}
+                        onValueChange={(value) => setPos(value[0])}
+                        onValueCommit={() => setIsDragging(false)}
+                        onPointerDown={() => setIsDragging(true)}
+                        className="py-1"
+                    />
+                </div>
             </div>
-            <div className="text-center text-sm font-medium text-slate-700 dark:text-slate-300">
+
+            <div className="text-center text-base font-medium text-indigo-100">
                 {positionLabel}
             </div>
-            <div className="flex justify-center space-x-2">
+
+            <div className="flex justify-center space-x-3">
                 <Button
                     variant="outline"
                     size="icon"
                     onClick={jumpToStart}
                     disabled={pos === 0}
+                    className="bg-slate-800/80 border-slate-600 hover:bg-slate-700 text-slate-200"
                 >
                     <SkipBack className="h-4 w-4" />
                 </Button>
@@ -203,6 +264,7 @@ export function TimelineViewer(
                     size="icon"
                     onClick={stepBack}
                     disabled={pos === 0}
+                    className="bg-slate-800/80 border-slate-600 hover:bg-slate-700 text-slate-200"
                 >
                     <ChevronLeft className="h-4 w-4" />
                 </Button>
@@ -211,6 +273,7 @@ export function TimelineViewer(
                     size="icon"
                     onClick={stepForward}
                     disabled={pos === totalLength - 1}
+                    className="bg-slate-800/80 border-slate-600 hover:bg-slate-700 text-slate-200"
                 >
                     <ChevronRight className="h-4 w-4" />
                 </Button>
@@ -219,18 +282,41 @@ export function TimelineViewer(
                     size="icon"
                     onClick={jumpToEnd}
                     disabled={pos === totalLength - 1}
+                    className="bg-slate-800/80 border-slate-600 hover:bg-slate-700 text-slate-200"
                 >
                     <SkipForward className="h-4 w-4" />
                 </Button>
             </div>
 
             {/* Frontiers display */}
-            <div className="mt-2 p-2 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono overflow-auto">
-                <div className="text-slate-500 mb-1 font-semibold">Current Frontiers:</div>
-                <div className="text-slate-700 dark:text-slate-300">
+            <div className="mt-4 p-4 bg-slate-800 border border-slate-700/50 rounded-md text-xs font-mono overflow-auto">
+                <div className="text-indigo-300 mb-2 font-semibold uppercase tracking-wider text-xs">Current Frontiers:</div>
+                <div className="text-slate-300">
                     {formatFrontiers(currentFrontiers)}
                 </div>
+                {currentChange && (
+                    <>
+                        <div className="text-indigo-300 mt-3 mb-2 font-semibold uppercase tracking-wider text-xs">Info:</div>
+                        <div className="text-slate-300 grid gap-1">
+                            <div>Timestamp: {new Date(currentChange.timestamp * 1000).toLocaleString()}</div>
+                            <div>Lamport: {currentLamport}</div>
+                        </div>
+                    </>
+                )}
             </div>
         </div>
     );
+}
+
+function frontiersEq(a: Frontiers, b: Frontiers): boolean {
+    if (a.length !== b.length) {
+        return false;
+    }
+    for (let i = 0; i < a.length; i++) {
+        if (a[i] !== b[i]) {
+            return false;
+        }
+    }
+
+    return true;
 }
