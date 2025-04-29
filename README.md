@@ -1,1 +1,1 @@
-# ![](./public/icon.png) Loro Inspector
+# ![](./public/icon-mini.png) Loro Inspector
