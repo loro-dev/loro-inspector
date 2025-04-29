@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { ImportedFileDetails } from './ImportedFileDetails';
-import { OpId, VersionVector } from "loro-crdt";
+import { LoroDoc, OpId, VersionVector } from "loro-crdt";
 
 // Mock version vector for stories
 class MockVersionVector {
@@ -41,6 +41,7 @@ export const Basic: Story = {
     args: {
         file: {
             name: 'example.loro',
+            loroDoc: new LoroDoc(),
             binary: new Uint8Array(1024), // 1KB file
             lastModified: Date.now() - 86400000, // 1 day ago
             importedTime: Date.now(),
@@ -69,6 +70,7 @@ export const WithLargeVectors: Story = {
     args: {
         file: {
             name: 'large-example.loro',
+            loroDoc: new LoroDoc(),
             binary: new Uint8Array(5 * 1024 * 1024), // 5MB file
             lastModified: Date.now() - 604800000, // 1 week ago
             importedTime: Date.now(),
@@ -95,6 +97,7 @@ export const Minimal: Story = {
     args: {
         file: {
             name: 'minimal.loro',
+            loroDoc: new LoroDoc(),
             binary: new Uint8Array(100),
             lastModified: Date.now(),
             importedTime: Date.now(),

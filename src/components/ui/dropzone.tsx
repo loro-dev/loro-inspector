@@ -2,7 +2,7 @@ import { LoroFile } from "@/types";
 import { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
-import { decodeImportBlobMeta } from "loro-crdt";
+import { decodeImportBlobMeta, LoroDoc } from "loro-crdt";
 
 export function Dropzone({ onRead }: { onRead?: (file: LoroFile) => void }) {
   const onDrop = useCallback(
@@ -31,12 +31,14 @@ export function Dropzone({ onRead }: { onRead?: (file: LoroFile) => void }) {
           const data = new Uint8Array(binaryStr);
           try {
             const meta = decodeImportBlobMeta(data, true);
-            meta.mode;
+            const loroDoc = new LoroDoc();
+            loroDoc.import(data);
             onRead?.({
               name: file.name,
               binary: data,
               lastModified: file.lastModified,
               importedTime: Date.now(),
+              loroDoc,
               ...meta
             });
             toast.success(`Loaded ${file.name}`);
@@ -60,6 +62,9 @@ export function Dropzone({ onRead }: { onRead?: (file: LoroFile) => void }) {
         ? "border-indigo-500 bg-indigo-500/10"
         : "border-gray-700 bg-gray-800/20 hover:border-gray-600 hover:bg-gray-800/30"
         }`}
+      style={{
+        maxWidth: "calc(100vw - 60px)",
+      }}
     >
       <input {...getInputProps()} />
 

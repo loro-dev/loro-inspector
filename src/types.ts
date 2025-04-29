@@ -1,8 +1,9 @@
-import { OpId, VersionVector } from "loro-crdt";
+import { LoroDoc, OpId, VersionVector } from "loro-crdt";
 
 export interface LoroFile {
   name: string;
   binary: Uint8Array;
+  loroDoc: LoroDoc;
   lastModified: number;
   importedTime: number;
   mode:

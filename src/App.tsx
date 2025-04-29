@@ -4,10 +4,11 @@ import { Dropzone } from "@/components/ui/dropzone";
 import { LoroFile } from "./types";
 import { Button } from "@/components/ui/button";
 import { ImportedFileDetails } from "./components/ImportedFileDetails";
+import { DocumentState } from "./components/DocumentState";
 
 function App() {
   const [imported, setImported] = useState<LoroFile | undefined>();
-  const [activeTab, setActiveTab] = useState<'state' | 'history' | 'timeline'>('state');
+  const [activeTab, setActiveTab] = useState<'state' | 'history'>('state');
   const [historyPosition, setHistoryPosition] = useState<number>(0);
 
   return (
@@ -41,11 +42,11 @@ function App() {
         </div>
 
         {/* Main content area */}
-        <div className="grid gap-8 md:grid-cols-[1fr_2fr]">
+        <div className="grid gap-8 lg:grid-cols-[1fr_2fr] md:grid-cols-1">
           {/* Left column with dropzone and info */}
-          <div className="flex flex-col gap-6 rounded-xl border border-gray-800 bg-gray-900/50 p-6">
+          <div className="flex flex-col gap-6 rounded-xl border border-gray-800 bg-gray-900/50 p-4 sm:p-6">
             <div className="text-xl font-medium text-white">Upload Loro Document</div>
-            <div className="mx-auto w-full max-w-md">
+            <div className="mx-auto w-full">
               <Dropzone
                 onRead={(x) => {
                   setImported(x);
@@ -62,44 +63,35 @@ function App() {
           </div>
 
           {/* Right column with content */}
-          <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-6">
+          <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-4 sm:p-6">
             {imported && imported.binary.length > 0 ? (
               <div className="space-y-6">
-                <div className="border-b border-gray-800 pb-4">
-                  <div className="flex space-x-4">
+                <div className="border-b border-gray-800 pb-4 overflow-x-auto">
+                  <div className="flex space-x-2 sm:space-x-4 min-w-max">
                     <button
                       onClick={() => setActiveTab('state')}
-                      className={`px-4 py-2 rounded-md transition-colors ${activeTab === 'state'
+                      className={`px-2 sm:px-4 py-2 rounded-md transition-colors text-sm sm:text-base ${activeTab === 'state'
                         ? 'bg-indigo-600 text-white'
                         : 'text-gray-400 hover:bg-gray-800 hover:text-white'
                         }`}
                     >
-                      Document State
+                      State
                     </button>
                     <button
                       onClick={() => setActiveTab('history')}
-                      className={`px-4 py-2 rounded-md transition-colors ${activeTab === 'history'
+                      className={`px-2 sm:px-4 py-2 rounded-md transition-colors text-sm sm:text-base ${activeTab === 'history'
                         ? 'bg-indigo-600 text-white'
                         : 'text-gray-400 hover:bg-gray-800 hover:text-white'
                         }`}
                     >
-                      Operation History
-                    </button>
-                    <button
-                      onClick={() => setActiveTab('timeline')}
-                      className={`px-4 py-2 rounded-md transition-colors ${activeTab === 'timeline'
-                        ? 'bg-indigo-600 text-white'
-                        : 'text-gray-400 hover:bg-gray-800 hover:text-white'
-                        }`}
-                    >
-                      Timeline View
+                      History
                     </button>
                   </div>
                 </div>
 
                 {activeTab === 'state' && (
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                       <h3 className="text-xl font-medium text-white">Current Document State</h3>
                       <div className="flex gap-2">
                         <Button variant="secondary" size="sm">Export JSON</Button>
@@ -108,7 +100,7 @@ function App() {
                     </div>
 
                     {imported.binary.length > 10 ? (
-                      <div>Placeholder</div>
+                      <DocumentState loroDoc={imported.loroDoc} />
                     ) : (
                       <div className="rounded-lg border border-gray-800 bg-gray-900/80 p-4">
                         <div className="min-h-[300px] flex items-center justify-center">
@@ -124,7 +116,7 @@ function App() {
 
                 {activeTab === 'history' && (
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                       <h3 className="text-xl font-medium text-white">Operation History</h3>
                       <Button variant="outline" size="sm">Filter Operations</Button>
                     </div>
@@ -140,7 +132,7 @@ function App() {
                                 : 'border-gray-700 bg-gray-800/30'
                                 }`}
                             >
-                              <div className="flex justify-between items-start">
+                              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
                                 <div>
                                   <div className="font-medium text-gray-300">
                                     Operation #{i + 1} - {i === 0 ? 'Initial State' : `Insert Text ${i}`}
@@ -159,74 +151,12 @@ function App() {
                                 </Button>
                               </div>
                               {i > 0 && (
-                                <div className="text-xs text-gray-400 mt-2 font-mono bg-gray-800/50 p-2 rounded">
+                                <div className="text-xs text-gray-400 mt-2 font-mono bg-gray-800/50 p-2 rounded overflow-x-auto">
                                   {`{"op":"insert","path":["text"],"offset":${i * 10},"content":"Lorem ipsum"}`}
                                 </div>
                               )}
                             </div>
                           ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {activeTab === 'timeline' && (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-xl font-medium text-white">Timeline Visualization</h3>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm">By Author</Button>
-                        <Button variant="outline" size="sm">By Time</Button>
-                      </div>
-                    </div>
-
-                    <div className="rounded-lg border border-gray-800 bg-gray-900/80 p-4">
-                      <div className="min-h-[400px]">
-                        <div className="h-64 w-full flex flex-col justify-end">
-                          <div className="flex items-end h-48 w-full pb-2 gap-1">
-                            {[...Array(20)].map((_, i) => (
-                              <div
-                                key={i}
-                                className="flex-1 bg-indigo-600/80 hover:bg-indigo-500 cursor-pointer transition-all rounded-t-sm"
-                                style={{
-                                  height: `${Math.max(10, Math.sin(i / 3) * 100 + 20)}%`,
-                                  opacity: historyPosition > i / 2 ? 1 : 0.4,
-                                  backgroundColor: i % 3 === 0 ? 'rgb(79, 70, 229, 0.8)' : i % 3 === 1 ? 'rgb(16, 185, 129, 0.8)' : 'rgb(239, 68, 68, 0.8)'
-                                }}
-                                onClick={() => setHistoryPosition(Math.floor(i / 2))}
-                              />
-                            ))}
-                          </div>
-                          <div className="flex w-full gap-1 mt-2">
-                            {[...Array(10)].map((_, i) => (
-                              <div key={i} className="flex-1 text-center">
-                                <div className={`h-1 bg-gray-700 ${historyPosition === i ? 'bg-indigo-500' : ''}`}></div>
-                                <div className="text-xs text-gray-500 mt-1">{i + 1}</div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="flex justify-between text-xs text-gray-500 mt-4">
-                          <div>11:30 AM</div>
-                          <div>12:00 PM</div>
-                          <div>12:30 PM</div>
-                        </div>
-                        <div className="flex justify-center mt-8">
-                          <div className="flex gap-6">
-                            <div className="flex items-center gap-2">
-                              <div className="w-3 h-3 rounded-full bg-indigo-600"></div>
-                              <span className="text-xs text-gray-400">User 1</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <div className="w-3 h-3 rounded-full bg-green-600"></div>
-                              <span className="text-xs text-gray-400">User 2</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <div className="w-3 h-3 rounded-full bg-red-600"></div>
-                              <span className="text-xs text-gray-400">User 3</span>
-                            </div>
-                          </div>
                         </div>
                       </div>
                     </div>
