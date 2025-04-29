@@ -44,7 +44,6 @@ export const Basic: Story = {
             loroDoc: new LoroDoc(),
             binary: new Uint8Array(1024), // 1KB file
             lastModified: Date.now() - 86400000, // 1 day ago
-            importedTime: Date.now(),
             mode: 'snapshot',
             partialStartVersionVector: new MockVersionVector([
                 ['user1', 10],
@@ -73,7 +72,6 @@ export const WithLargeVectors: Story = {
             loroDoc: new LoroDoc(),
             binary: new Uint8Array(5 * 1024 * 1024), // 5MB file
             lastModified: Date.now() - 604800000, // 1 week ago
-            importedTime: Date.now(),
             mode: 'update',
             partialStartVersionVector: new MockVersionVector(
                 Array.from({ length: 20 }, (_, i) => [`user${i}`, i * 10])
@@ -100,7 +98,6 @@ export const Minimal: Story = {
             loroDoc: new LoroDoc(),
             binary: new Uint8Array(100),
             lastModified: Date.now(),
-            importedTime: Date.now(),
             mode: 'shallow-snapshot',
             partialStartVersionVector: new MockVersionVector([]) as unknown as VersionVector,
             partialEndVersionVector: new MockVersionVector([]) as unknown as VersionVector,

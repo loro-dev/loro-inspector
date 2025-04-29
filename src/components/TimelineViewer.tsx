@@ -100,7 +100,6 @@ export function TimelineViewer(
 
     useEffect(() => {
         // Basic setup
-
         const vv = loroDoc.oplogVersion().toJSON();
         const length = 2 + Array.from(vv.values()).reduce((a, b) => a + b, 0)
         lengthRef.current = length;
@@ -290,13 +289,13 @@ export function TimelineViewer(
 
             {/* Frontiers display */}
             <div className="mt-4 p-4 bg-slate-800 border border-slate-700/50 rounded-md text-xs font-mono overflow-auto">
-                <div className="text-indigo-300 mb-2 font-semibold uppercase tracking-wider text-xs">Current Frontiers:</div>
+                <div className="text-indigo-400 mb-2 font-semibold uppercase tracking-wider text-xs">Current Frontiers:</div>
                 <div className="text-slate-300">
                     {formatFrontiers(currentFrontiers)}
                 </div>
                 {currentChange && (
                     <>
-                        <div className="text-indigo-300 mt-3 mb-2 font-semibold uppercase tracking-wider text-xs">Info:</div>
+                        <div className="text-indigo-400 mt-3 mb-2 font-semibold uppercase tracking-wider text-xs">Info:</div>
                         <div className="text-slate-300 grid gap-1">
                             <div>Timestamp: {new Date(currentChange.timestamp * 1000).toLocaleString()}</div>
                             <div>Lamport: {currentLamport}</div>
@@ -313,7 +312,7 @@ function frontiersEq(a: Frontiers, b: Frontiers): boolean {
         return false;
     }
     for (let i = 0; i < a.length; i++) {
-        if (a[i] !== b[i]) {
+        if (a[i].peer !== b[i].peer || a[i].counter !== b[i].counter) {
             return false;
         }
     }

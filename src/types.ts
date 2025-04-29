@@ -5,7 +5,6 @@ export interface LoroFile {
   binary: Uint8Array;
   loroDoc: LoroDoc;
   lastModified: number;
-  importedTime: number;
   mode:
     | "outdated-snapshot"
     | "outdated-update"

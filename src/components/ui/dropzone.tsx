@@ -37,7 +37,6 @@ export function Dropzone({ onRead }: { onRead?: (file: LoroFile) => void }) {
               name: file.name,
               binary: data,
               lastModified: file.lastModified,
-              importedTime: Date.now(),
               loroDoc,
               ...meta
             });

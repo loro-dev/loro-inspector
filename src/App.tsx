@@ -1,5 +1,5 @@
 import { SVGProps, useState } from "react";
-import logo from "/icon.svg";
+import logo from "/icon.png";
 import { Dropzone } from "@/components/ui/dropzone";
 import { LoroFile } from "./types";
 import { Button } from "@/components/ui/button";
@@ -35,7 +35,7 @@ function App() {
       {/* Header with improved styling */}
       <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-gray-800 bg-gray-950/80 px-6 backdrop-blur-md">
         <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-indigo-600 p-1.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-md">
             <img src={logo} className="h-full w-full" alt="Loro Inspector logo" />
           </div>
           <h1 className="text-xl font-bold tracking-tight text-white">Loro Inspector</h1>

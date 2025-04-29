@@ -65,10 +65,6 @@ export function ImportedFileDetails({ file }: ImportedFileDetailsProps) {
                     <span className="font-medium">Last Modified:</span>
                     <span className="font-mono">{new Date(file.lastModified).toLocaleString()}</span>
                 </div>
-                <div className="flex flex-col sm:flex-row sm:justify-between gap-1">
-                    <span className="font-medium">Imported:</span>
-                    <span className="font-mono">{new Date(file.importedTime).toLocaleString()}</span>
-                </div>
                 <div className="border-t border-gray-800 my-2"></div>
                 <div className="flex flex-col gap-1">
                     <span className="font-medium">Partial Start Version Vector:</span>
@@ -133,7 +129,7 @@ export function ImportedFileDetails({ file }: ImportedFileDetailsProps) {
                 </div>
                 <div className="flex flex-col sm:flex-row sm:justify-between gap-1">
                     <span className="font-medium">Change Number:</span>
-                    <span className="font-mono">{file.changeNum}</span>
+                    <span className="font-mono">{file.changeNum.toLocaleString()}</span>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:justify-between gap-1">
                     <span className="font-medium">Total Ops Number:</span>
