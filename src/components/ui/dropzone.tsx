@@ -1,18 +1,14 @@
-import { BinaryFile } from "@/types";
+import { LoroFile } from "@/types";
 import { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
+import { decodeImportBlobMeta } from "loro-crdt";
 
-export function Dropzone({ onRead }: { onRead?: (file: BinaryFile) => void }) {
+export function Dropzone({ onRead }: { onRead?: (file: LoroFile) => void }) {
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       acceptedFiles.forEach((file) => {
         const reader = new FileReader();
-        if (!file.name.endsWith(".wasm")) {
-          toast.error("File must be a wasm file");
-          return;
-        }
-
         reader.onabort = () => console.log("file reading was aborted");
         reader.onerror = (e) => {
           console.error(e);
@@ -33,13 +29,22 @@ export function Dropzone({ onRead }: { onRead?: (file: BinaryFile) => void }) {
           }
 
           const data = new Uint8Array(binaryStr);
-          onRead?.({
-            name: file.name,
-            binary: data,
-            lastModified: file.lastModified,
-            importedTime: Date.now(),
-          });
-          toast.success(`Loaded ${file.name}`);
+          try {
+            const meta = decodeImportBlobMeta(data, true);
+            meta.mode;
+            onRead?.({
+              name: file.name,
+              binary: data,
+              lastModified: file.lastModified,
+              importedTime: Date.now(),
+              ...meta
+            });
+            toast.success(`Loaded ${file.name}`);
+          } catch (e) {
+            toast.error("Invalid Loro document");
+            return;
+          }
+
         };
         reader.readAsArrayBuffer(file);
       });

@@ -1,17 +1,12 @@
 import { SVGProps, useState } from "react";
 import logo from "/icon.svg";
 import { Dropzone } from "@/components/ui/dropzone";
-import { BinaryFile } from "./types";
+import { LoroFile } from "./types";
 import { Button } from "@/components/ui/button";
+import { ImportedFileDetails } from "./components/ImportedFileDetails";
 
 function App() {
-  const [imported, setImported] = useState<BinaryFile>({
-    name: "Example Loro Document.wasm",
-    binary: new Uint8Array(),
-    importedTime: Date.now(),
-    lastModified: Date.now(),
-  });
-
+  const [imported, setImported] = useState<LoroFile | undefined>();
   const [activeTab, setActiveTab] = useState<'state' | 'history' | 'timeline'>('state');
   const [historyPosition, setHistoryPosition] = useState<number>(0);
 
@@ -59,71 +54,16 @@ function App() {
               />
             </div>
 
-            {imported.binary.length > 0 && (
+            {imported && imported.binary.length > 0 && (
               <div className="mt-4 space-y-4">
-                <div className="rounded-lg border border-gray-800 bg-gray-900/80 p-4">
-                  <h3 className="mb-2 font-medium text-white">Document Details</h3>
-                  <div className="space-y-2 text-sm text-gray-400">
-                    <div className="flex justify-between">
-                      <span>Name:</span>
-                      <span className="font-mono text-indigo-400">{imported.name}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Size:</span>
-                      <span className="font-mono">{imported.binary.length} bytes</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Imported:</span>
-                      <span className="font-mono">{new Date(imported.importedTime).toLocaleString()}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-lg border border-gray-800 bg-gray-900/80 p-4">
-                  <h3 className="mb-3 font-medium text-white">Document History</h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        className="w-8 h-8 p-0 flex items-center justify-center"
-                        disabled={historyPosition === 0}
-                        onClick={() => setHistoryPosition(p => Math.max(0, p - 1))}
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="m15 18-6-6 6-6" />
-                        </svg>
-                      </Button>
-                      <div className="flex-1 h-2 bg-gray-800 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-indigo-600 rounded-full"
-                          style={{ width: `${historyPosition * 10}%` }}
-                        ></div>
-                      </div>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        className="w-8 h-8 p-0 flex items-center justify-center"
-                        disabled={historyPosition >= 10}
-                        onClick={() => setHistoryPosition(p => Math.min(10, p + 1))}
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="m9 18 6-6-6-6" />
-                        </svg>
-                      </Button>
-                    </div>
-                    <div className="text-center text-xs text-gray-500">
-                      Viewing version {historyPosition} of {10}
-                    </div>
-                  </div>
-                </div>
+                <ImportedFileDetails file={imported} />
               </div>
             )}
           </div>
 
           {/* Right column with content */}
           <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-6">
-            {imported.binary.length > 0 ? (
+            {imported && imported.binary.length > 0 ? (
               <div className="space-y-6">
                 <div className="border-b border-gray-800 pb-4">
                   <div className="flex space-x-4">

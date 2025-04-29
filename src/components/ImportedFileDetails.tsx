@@ -1,0 +1,138 @@
+import { OpId, VersionVector } from "loro-crdt";
+import { LoroFile } from "@/types";
+import { useState } from "react";
+import { VersionVectorDialog } from "./VersionVectorDialog";
+
+interface ImportedFileDetailsProps {
+    file: LoroFile;
+}
+
+export function ImportedFileDetails({ file }: ImportedFileDetailsProps) {
+    const [showStartVV, setShowStartVV] = useState(false);
+    const [showEndVV, setShowEndVV] = useState(false);
+
+    const formatBytes = (bytes: number): string => {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    };
+
+    const formatVersionVector = (vv: VersionVector | undefined) => {
+        if (!vv || !vv.toJSON) return 'N/A';
+
+        const map = vv.toJSON();
+        const entries = Array.from(map.entries()) as Array<[string, number]>;
+        if (entries.length <= 3) {
+            return JSON.stringify(Object.fromEntries(entries));
+        } else {
+            const sample = entries.slice(0, 3);
+            return `${JSON.stringify(Object.fromEntries(sample))} ... (${entries.length} entries)`;
+        }
+    };
+
+    const formatFrontiers = (frontiers: OpId[] | undefined) => {
+        if (!frontiers || frontiers.length === 0) return 'None';
+
+        if (frontiers.length <= 3) {
+            return JSON.stringify(frontiers);
+        } else {
+            return `${JSON.stringify(frontiers.slice(0, 3))} ... (${frontiers.length} entries)`;
+        }
+    };
+
+    return (
+        <div className="rounded-lg border border-gray-800 bg-gray-900/80 p-4">
+            <h3 className="mb-2 font-medium text-white">Document Details</h3>
+            <div className="space-y-2 text-sm text-gray-400">
+                <div className="flex justify-between">
+                    <span>Name:</span>
+                    <span className="font-mono text-indigo-400">{file.name}</span>
+                </div>
+                <div className="flex justify-between">
+                    <span>Size:</span>
+                    <span className="font-mono">{formatBytes(file.binary.length)}</span>
+                </div>
+                <div className="flex justify-between">
+                    <span>Mode:</span>
+                    <span className="font-mono text-indigo-400">{file.mode}</span>
+                </div>
+                <div className="flex justify-between">
+                    <span>Last Modified:</span>
+                    <span className="font-mono">{new Date(file.lastModified).toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                    <span>Imported:</span>
+                    <span className="font-mono">{new Date(file.importedTime).toLocaleString()}</span>
+                </div>
+                <div className="border-t border-gray-800 my-2"></div>
+                <div className="flex flex-col gap-1">
+                    <span>Partial Start Version Vector:</span>
+                    <code
+                        className="group block bg-gray-950 p-2 rounded-md text-xs overflow-auto cursor-pointer hover:bg-gray-900 transition-colors relative"
+                        onClick={() => setShowStartVV(true)}
+                    >
+                        <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span className="bg-indigo-900/60 text-[10px] px-1.5 py-0.5 rounded-sm text-white">Click to view all</span>
+                        </div>
+                        {formatVersionVector(file.partialStartVersionVector)}
+                    </code>
+                    {showStartVV && (
+                        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-6 backdrop-blur-sm" onClick={() => setShowStartVV(false)}>
+                            <div onClick={(e) => e.stopPropagation()}>
+                                <VersionVectorDialog
+                                    versionVector={file.partialStartVersionVector}
+                                    title="Partial Start Version Vector"
+                                    onClose={() => setShowStartVV(false)}
+                                />
+                            </div>
+                        </div>
+                    )}
+                </div>
+                <div className="flex flex-col gap-1">
+                    <span>Partial End Version Vector:</span>
+                    <code
+                        className="group block bg-gray-950 p-2 rounded-md text-xs overflow-auto cursor-pointer hover:bg-gray-900 transition-colors relative"
+                        onClick={() => setShowEndVV(true)}
+                    >
+                        <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span className="bg-indigo-900/60 text-[10px] px-1.5 py-0.5 rounded-sm text-white">Click to view all</span>
+                        </div>
+                        {formatVersionVector(file.partialEndVersionVector)}
+                    </code>
+                    {showEndVV && (
+                        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-6 backdrop-blur-sm" onClick={() => setShowEndVV(false)}>
+                            <div onClick={(e) => e.stopPropagation()}>
+                                <VersionVectorDialog
+                                    versionVector={file.partialEndVersionVector}
+                                    title="Partial End Version Vector"
+                                    onClose={() => setShowEndVV(false)}
+                                />
+                            </div>
+                        </div>
+                    )}
+                </div>
+                <div className="flex flex-col gap-1">
+                    <span>Start Frontiers:</span>
+                    <code className="block bg-gray-950 p-2 rounded-md text-xs overflow-auto">
+                        {formatFrontiers(file.startFrontiers)}
+                    </code>
+                </div>
+                <div className="border-t border-gray-800 my-2"></div>
+                <div className="flex justify-between">
+                    <span>Start Timestamp:</span>
+                    <span className="font-mono">{new Date(file.startTimestamp * 1000).toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                    <span>End Timestamp:</span>
+                    <span className="font-mono">{new Date(file.endTimestamp * 1000).toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                    <span>Change Number:</span>
+                    <span className="font-mono">{file.changeNum}</span>
+                </div>
+            </div>
+        </div>
+    );
+} 
