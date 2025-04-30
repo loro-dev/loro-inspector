@@ -2,6 +2,8 @@
 
 A developer tool for inspecting Loro document state, structure, and history.
 
+https://github.com/user-attachments/assets/1087d5be-3011-4ce5-9088-889a1901ad55
+
 ## What is Loro Inspector?
 
 Loro Inspector is a web-based tool that allows you to examine the internal state
