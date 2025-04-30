@@ -47,7 +47,7 @@ the tool directly in your browser.
 
 1. Clone the repository
    ```
-   git clone https://github.com/zxch3n/loro-inspector.git
+   git clone https://github.com/loro-dev/loro-inspector.git
    ```
 
 2. Install dependencies

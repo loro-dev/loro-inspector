@@ -75,7 +75,7 @@ function App() {
           <h1 className="text-xl font-bold tracking-tight text-white">Loro Inspector</h1>
         </div>
         <a
-          href="https://github.com/zxch3n/loro-inspector"
+          href="https://github.com/loro-dev/loro-inspector"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-2 rounded-full bg-gray-800 px-4 py-1.5 text-sm text-gray-300 transition-colors hover:bg-gray-700 hover:text-white"
