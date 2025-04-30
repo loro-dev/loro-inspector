@@ -29,24 +29,35 @@ export function Dropzone({ onRead }: { onRead?: (file: LoroFile) => void }) {
           }
 
           const data = new Uint8Array(binaryStr);
+          let meta;
+          const loroDoc = new LoroDoc();
           try {
-            const meta = decodeImportBlobMeta(data, true);
-            const loroDoc = new LoroDoc();
+            meta = decodeImportBlobMeta(data, true);
             loroDoc.import(data);
-            onRead?.({
-              name: file.name,
-              binary: data,
-              lastModified: file.lastModified,
-              loroDoc,
-              ...meta
-            });
-            toast.success(`Loaded ${file.name}`);
-          } catch (e) {
-            toast.error("Invalid Loro document");
-            return;
+          }
+          catch (error) {
+            // maybe json updates
+            try {
+              const jsonString = new TextDecoder().decode(data);
+              const jsonData = JSON.parse(jsonString);
+              loroDoc.importJsonUpdates(jsonData);
+              meta = decodeImportBlobMeta(loroDoc.export({ mode: "snapshot" }), false);
+            } catch (err) {
+              console.error(err);
+              toast.error("Invalid Loro document");
+              return;
+            }
           }
 
-        };
+          onRead?.({
+            name: file.name,
+            binary: data,
+            lastModified: file.lastModified,
+            loroDoc,
+            ...meta
+          });
+          toast.success(`Loaded ${file.name}`);
+        }
         reader.readAsArrayBuffer(file);
       });
     },
