@@ -1,6 +1,8 @@
 # ![](./public/icon.png) Loro Inspector
 
-A developer tool for inspecting Loro document state, structure, and history.
+A developer tool for inspecting Loro document state and history.
+
+Try it out at [inspector.loro.dev](https://inspector.loro.dev/).
 
 https://github.com/user-attachments/assets/1087d5be-3011-4ce5-9088-889a1901ad55
 
@@ -14,36 +16,14 @@ of Loro CRDT documents. With it, you can:
 - Visualize the Directed Acyclic Graph (DAG) of changes
 - Navigate through time to see how the document evolved
 
-## What is Loro?
-
-[Loro](https://loro.dev/) is a high-performance Conflict-free Replicated Data
-Types (CRDT) library that makes building local-first and collaborative
-applications easier. CRDTs allow multiple users to independently edit the same
-document without coordination, while automatically resolving conflicts.
-
-Loro features:
-
-- P2P synchronization
-- Automatic conflict resolution
-- Local-first operation
-- Rich CRDT types (Text, Rich Text, Map, List, Tree, etc.)
-- Time travel capabilities
-- High performance with minimal storage overhead
-
 ## Features
 
+- **File Import**: Analyze Loro document files by drag-and-drop
 - **Document State View**: Inspect the current state of your Loro document
 - **History Timeline**: Navigate through the document's history
 - **DAG Visualization**: View the directed acyclic graph of document changes
-- **File Import**: Analyze Loro document files by drag-and-drop
-- **Example Document**: Try the tool with a provided example document
 
 ## Getting Started
-
-### Online Demo
-
-Visit the [Loro Inspector website](https://inspector.loro.dev/) to use the tool
-directly in your browser.
 
 ### Running Locally
 
@@ -78,16 +58,6 @@ directly in your browser.
 
 3. In the State view, use the timeline slider to navigate through different
    versions of the document.
-
-## Building for Production
-
-To create a production build:
-
-```
-pnpm build
-```
-
-The built files will be in the `dist` directory.
 
 ## Contributing
 
