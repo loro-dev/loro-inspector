@@ -42,8 +42,8 @@ Loro features:
 
 ### Online Demo
 
-Visit the [Loro Inspector website](https://loro-inspector.vercel.app/) to use
-the tool directly in your browser.
+Visit the [Loro Inspector website](https://inspector.loro.dev/) to use the tool
+directly in your browser.
 
 ### Running Locally
 
