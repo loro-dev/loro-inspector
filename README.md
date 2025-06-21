@@ -19,6 +19,7 @@ of Loro CRDT documents. With it, you can:
 ## Features
 
 - **File Import**: Analyze Loro document files by drag-and-drop
+- **Text Import**: Import documents from pasted text content (base64, JSON, or plain text)
 - **Document State View**: Inspect the current state of your Loro document
 - **History Timeline**: Navigate through the document's history
 - **DAG Visualization**: View the directed acyclic graph of document changes
@@ -47,9 +48,12 @@ of Loro CRDT documents. With it, you can:
 
 ## Usage
 
-1. Either:
-   - Drag and drop a Loro document file onto the dropzone
-   - Click "Try Example Document" to load the included sample
+1. Import a Loro document using one of these methods:
+   - **File Upload**: Drag and drop a Loro document file onto the dropzone
+   - **Text Import**: Switch to "Text Import" tab and paste:
+     - Base64 encoded Loro updates/snapshots
+     - JSON updates from `doc.exportJsonUpdates(...)`
+   - **Example**: Click "Try Example Document" to load the included sample
 
 2. Use the tabs to switch between different views:
    - **State**: View the current document state

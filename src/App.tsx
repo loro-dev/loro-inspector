@@ -1,6 +1,7 @@
 import { SVGProps, useState, useCallback } from "react";
 import logo from "/icon.png";
 import { Dropzone } from "@/components/ui/dropzone";
+import { TextImport } from "@/components/ui/text-import";
 import { LoroFile } from "./types";
 import { Button } from "@/components/ui/button";
 import { ImportedFileDetails } from "./components/ImportedFileDetails";
@@ -14,6 +15,7 @@ import { toast } from "sonner";
 function App() {
   const [imported, setImported] = useState<LoroFile | undefined>();
   const [activeTab, setActiveTab] = useState<'state' | 'history' | 'dag'>('state');
+  const [importMode, setImportMode] = useState<'file' | 'text'>('file');
   const [loadedTabs, setLoadedTabs] = useState<{
     state: boolean;
     history: boolean;
@@ -96,15 +98,47 @@ function App() {
 
         {/* Main content area */}
         <div className="grid gap-8 lg:grid-cols-[1fr_2fr] md:grid-cols-1">
-          {/* Left column with dropzone and info */}
+          {/* Left column with import options and info */}
           <div className="flex flex-col gap-6 rounded-xl border border-gray-800 bg-gray-900/50 p-4 sm:p-6">
-            <div className="text-xl font-medium text-white">Upload Loro Document</div>
+            <div className="text-xl font-medium text-white">Import Loro Document</div>
+
+            {/* Import mode tabs */}
+            <div className="flex rounded-lg border border-gray-700 bg-gray-800/50 p-1">
+              <button
+                onClick={() => setImportMode('file')}
+                className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${importMode === 'file'
+                  ? 'bg-indigo-600 text-white'
+                  : 'text-gray-300 hover:text-white hover:bg-gray-700'
+                  }`}
+              >
+                File Upload
+              </button>
+              <button
+                onClick={() => setImportMode('text')}
+                className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${importMode === 'text'
+                  ? 'bg-indigo-600 text-white'
+                  : 'text-gray-300 hover:text-white hover:bg-gray-700'
+                  }`}
+              >
+                Text Import
+              </button>
+            </div>
+
+            {/* Import interface */}
             <div className="mx-auto w-full">
-              <Dropzone
-                onRead={(x) => {
-                  setImported(x);
-                }}
-              />
+              {importMode === 'file' ? (
+                <Dropzone
+                  onRead={(x) => {
+                    setImported(x);
+                  }}
+                />
+              ) : (
+                <TextImport
+                  onRead={(x) => {
+                    setImported(x);
+                  }}
+                />
+              )}
             </div>
 
             {imported && imported.binary.length > 0 && (
@@ -215,7 +249,7 @@ function App() {
                 </div>
                 <h3 className="text-xl font-medium text-white">No Loro Document Loaded</h3>
                 <p className="max-w-sm text-gray-400 mb-4">
-                  Upload a Loro document file using the dropzone to inspect its content and history
+                  Import a Loro document by uploading a file or pasting base64/JSON content to inspect its state and history
                 </p>
                 <Button
                   variant="outline"
